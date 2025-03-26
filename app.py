@@ -130,7 +130,7 @@ if uploaded_file is not None and not st.session_state["updated"]:
     update_trading_journal(temp_file_path, "trading_journal.xlsx")
     st.cache_data.clear()
     st.session_state["updated"] = True
-    st.experimental_rerun()
+    st.rerun()
     st.stop()
 
 # --- Load Data ---
