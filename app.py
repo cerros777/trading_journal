@@ -131,6 +131,7 @@ if uploaded_file is not None and not st.session_state["updated"]:
     st.cache_data.clear()
     st.session_state["updated"] = True
     st.experimental_rerun()
+    st.stop()
 
 # --- Load Data ---
 @st.cache_data
