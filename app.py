@@ -139,7 +139,10 @@ def load_data(file):
     df = pd.read_excel(file)
     # Use the same date format as saved in tradingjournal.py
     df["Date"] = pd.to_datetime(df["Date"], format="%d-%m-%y %H:%M", errors='coerce')
+    df = df.dropna(subset=["Date"])
     df = df[df["Total Position PnL"].notna()]
+
+
     return df
 
 df = load_data("trading_journal.xlsx")
@@ -162,7 +165,7 @@ expectancy = (win_rate/100 * avg_win) + ((1 - win_rate/100) * avg_loss)
 
 # --- Last Day Metrics ---
 df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
-last_date = df["Date"].dt.date.max()
+last_date = df["Date"].max().date()
 last_day_df = df[df["Date"].dt.date == last_date]
 
 if not last_day_df.empty:
