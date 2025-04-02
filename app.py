@@ -34,6 +34,13 @@ st.markdown("""
     ul.metrics-list li {
         margin-bottom: 0.5rem;
     }
+    /*Cards */
+    [data-testid="stColumn"] {
+        background-color: #1e1e1e;
+        border:1px solid #444;
+        border-radius: 10px;
+        padding: 20px; 
+    }
     /* Table Styling */
     .custom-table {
         width: 100%;
@@ -120,25 +127,25 @@ st.markdown('<div class="content">', unsafe_allow_html=True)
 st.sidebar.header("📤 Upload New Trades")
 uploaded_file = st.sidebar.file_uploader("Upload latest_trades.xlsx", type=["xlsx"])
 
-if "updated" not in st.session_state:
-    st.session_state["updated"] = False
+if "prev_uploaded_file" not in st.session_state:
+    st.session_state.prev_uploaded_file = None
 
-if uploaded_file is not None and not st.session_state["updated"]:
-    temp_file_path = "uploaded_latest_trades.xlsx"
-    with open(temp_file_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
-    update_trading_journal(temp_file_path, "trading_journal.xlsx")
-    st.cache_data.clear()
-    st.session_state["updated"] = True
-    st.rerun()
-    st.stop()
-
+if uploaded_file is not None:
+    # Check if the uploaded file is different from the last uploaded file.
+    if uploaded_file != st.session_state.prev_uploaded_file:
+        st.session_state.prev_uploaded_file = uploaded_file  # Update stored file
+        temp_file_path = "uploaded_latest_trades.xlsx"
+        with open(temp_file_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        update_trading_journal(temp_file_path, "trading_journal.xlsx")
+        st.cache_data.clear()
+        st.rerun()  # 
+        st.stop()
 # --- Load Data ---
 @st.cache_data
 def load_data(file):
-    df = pd.read_excel(file)
+    df = pd.read_excel(file, parse_dates=["Date"])
     # Use the same date format as saved in tradingjournal.py
-    df["Date"] = pd.to_datetime(df["Date"], format="%d-%m-%y %H:%M", errors='coerce')
     df = df.dropna(subset=["Date"])
     df = df[df["Total Position PnL"].notna()]
 
@@ -146,6 +153,7 @@ def load_data(file):
     return df
 
 df = load_data("trading_journal.xlsx")
+print(f"loaded data {df}")
 
 # --- Overall Metrics Calculations ---
 total_trades = len(df)
@@ -274,29 +282,28 @@ fig_dd.add_trace(go.Scatter(
     x=daily_pnl["Date"],
     y=daily_pnl["Drawdown"],
     mode="lines",
-    line=dict(color="crimson", width=2),
+    line=dict(color="crimson", width=3),
     hovertemplate="Date: %{x}<br>Drawdown: %{y:.2f}<extra></extra>",
 ))
 fig_dd.update_layout(
     title="📉 Drawdown Over Time",
     xaxis_title="Date",
     yaxis_title="Drawdown",
+    hovermode="x unified",
     template="plotly_dark",
-    height=350
+    height=400
 )
 
 # --- Layout: Top Row with 3 Columns for Cards ---
 st.title("📘 Trading Journal")
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
 with col1:
-    st.subheader("Last Day Stats")
-    st.markdown(last_day_stats, unsafe_allow_html=True)
-with col2:
-    st.subheader("Stats for Latest Trading Day")
+    st.subheader("Last Day Stats.")
     st.markdown(latest_trading_day_stats, unsafe_allow_html=True)
-with col3:
+with col2:
     st.subheader("Stats Summary")
     st.markdown(stats_summary, unsafe_allow_html=True)
+
 
 # --- Layout: Second Row with 2 Columns for Charts ---
 col_ec, col_dd = st.columns(2)
@@ -305,7 +312,7 @@ with col_ec:
     st.plotly_chart(fig, use_container_width=True)
 with col_dd:
     st.subheader("📉 Drawdown Curve")
-    st.plotly_chart(fig_dd, use_container_width=True)
+    st.plotly_chart(fig_dd, use_container_width=True)                                                                                               
 
 # --- Latest 5 Trades Section ---
 st.subheader("🧾 Latest 5 Trades")
