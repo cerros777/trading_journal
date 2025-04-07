@@ -28,18 +28,36 @@ st.markdown("""
     ul.metrics-list {
         list-style: none;
         padding: 0;
+        margin: 10;
         line-height: 1.6;
         font-size: 0.95rem;
+        column-count: 2;
+        column-gap: 0.5rem
     }
     ul.metrics-list li {
-        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0px;
+        margin-bottom: 1rem;
+        margin-right: 0.5rem;
     }
+    ul.metrics-list li .stat-title {
+          flex: 1;
+          text-align: left;
+          
+      }
+      ul.metrics-list li .stat-value {
+          flex: 1;
+          text-align: right;
+          font-weight: bold;
+      }
     /*Cards */
     [data-testid="stColumn"] {
-        background-color: #1e1e1e;
-        border:1px solid #444;
+        background-color: rgb(38, 39, 48);
+        border:1px solid #30363D;
         border-radius: 10px;
-        padding: 20px; 
+        padding: 10px; 
     }
     /* Table Styling */
     .custom-table {
@@ -172,79 +190,132 @@ max_loss = df["Total Position PnL"].min()
 expectancy = (win_rate/100 * avg_win) + ((1 - win_rate/100) * avg_loss)
 
 # --- Last Day Metrics ---
-df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+df["Date"] = pd.to_datetime(df["Date"], errors="coerce") 
 last_date = df["Date"].max().date()
 last_day_df = df[df["Date"].dt.date == last_date]
-
-if not last_day_df.empty:
-    total_trades_day = len(last_day_df)
-    wins_day = last_day_df[last_day_df["Total Position PnL"] > 0]
-    losses_day = last_day_df[last_day_df["Total Position PnL"] < 0]
-    win_rate_day = len(wins_day) / total_trades_day * 100 if total_trades_day > 0 else 0
-    total_pnl_day = last_day_df["Total Position PnL"].sum()
-    max_win_day = last_day_df["Total Position PnL"].max()
-    max_loss_day = last_day_df["Total Position PnL"].min()
-    avg_win_day = wins_day["Total Position PnL"].mean() if not wins_day.empty else 0
-    avg_loss_day = losses_day["Total Position PnL"].mean() if not losses_day.empty else 0
-    expectancy_day = (win_rate_day / 100 * avg_win_day) + ((1 - win_rate_day / 100) * avg_loss_day)
-    
-    last_day_stats = f"""
-    <ul class="metrics-list">
-        <li>🧾 Trades: {total_trades_day}</li>
-        <li>✅ Wins: {len(wins_day)}</li>
-        <li>❌ Losses: {len(losses_day)}</li>
-        <li>🏆 Win Rate: {win_rate_day:.1f}%</li>
-        <li>📈 Max Win: {max_win_day:.2f}</li>
-        <li>📉 Max Loss: {max_loss_day:.2f}</li>
-        <li>💡 Expectancy: {expectancy_day:.2f}</li>
-        <li>💰 Total PnL: <span style="color:{'limegreen' if total_pnl_day > 0 else 'tomato'};">{total_pnl_day:.2f}</span></li>
-    </ul>
-    """
-else:
-    last_day_stats = "<p>No trades found for the last trading day.</p>"
-
-# --- Stats for Latest Trading Day ---
 last_day_trades = df[(df["Date"].dt.date == last_date) & df["Total Position PnL"].notna()]
+
 
 if not last_day_trades.empty:
     total_last = len(last_day_trades)
     wins_last = (last_day_trades["Total Position PnL"] > 0).sum()
     losses_last = (last_day_trades["Total Position PnL"] < 0).sum()
     pnl_last = last_day_trades["Total Position PnL"].sum()
+    #pnl_last_pct = pnl_last / total_last * 100
     win_rate_last = wins_last / total_last * 100 if total_last > 0 else 0
     avg_win_last = last_day_trades[last_day_trades["Total Position PnL"] > 0]["Total Position PnL"].mean()
     avg_loss_last = last_day_trades[last_day_trades["Total Position PnL"] < 0]["Total Position PnL"].mean()
     expectancy_last = (win_rate_last/100 * avg_win_last) + ((1 - win_rate_last/100) * avg_loss_last)
+    previous_cumulative_pnl = df[df["Date"].dt.date < last_date]["Total Position PnL"].sum()+100
+    if previous_cumulative_pnl != 0:
+        pnl_last_pct = (pnl_last / previous_cumulative_pnl) * 100
+    else:
+        pnl_last_pct = None  # Or handle the zero case as needed
+
     
     latest_trading_day_stats = f"""
     <ul class="metrics-list">
-        <li>💼 Trades: {total_last}</li>
-        <li>✅ Wins: {wins_last}</li>
-        <li>❌ Losses: {losses_last}</li>
-        <li>📈 Max Win: {last_day_trades['Total Position PnL'].max():.2f}</li>
-        <li>📉 Max Loss: {last_day_trades['Total Position PnL'].min():.2f}</li>
-        <li>🏆 Win Rate: {win_rate_last:.1f}%</li>
-        <li>📊 Avg Win / Loss: {avg_win_last:.2f} / {avg_loss_last:.2f}</li>
-        <li>💡 Expectancy: {expectancy_last:.2f}</li>
-        <li>💰 Total PnL: <span style="color:{'limegreen' if pnl_last > 0 else 'tomato'};">{pnl_last:.2f}</span></li>
+    <li>
+        <span class="stat-title">💼 Trades</span>
+        <span class="stat-value">{total_last}</span>
+    </li>
+    <li>
+        <span class="stat-title">✅ Wins</span>
+        <span class="stat-value">{wins_last}</span>
+    </li>
+    <li>
+        <span class="stat-title">❌ Losses</span>
+        <span class="stat-value">{losses_last}</span>
+    </li>
+    <li>
+        <span class="stat-title">📈 Max Win</span>
+        <span class="stat-value">${last_day_trades['Total Position PnL'].max():.2f}</span>
+    </li>
+    <li>
+        <span class="stat-title">📉 Max Loss</span>
+        <span class="stat-value">${last_day_trades['Total Position PnL'].min():.2f}</span>
+    </li>
+    <li>
+        <span class="stat-title">🏆 Win Rate</span>
+        <span class="stat-value">{win_rate_last:.1f}%</span>
+    </li>
+    <li>
+        <span class="stat-title">📊 Avg Win</span>
+        <span class="stat-value">${avg_win_last:.2f}</span>
+    </li>
+    <li>
+        <span class="stat-title">📊 Avg Loss</span>
+        <span class="stat-value">${avg_loss_last:.2f}</span>
+    </li>
+    <li>
+        <span class="stat-title">💡 Expectancy</span>
+        <span class="stat-value">{expectancy_last:.2f}</span>
+    </li>
+    <li>
+        <span class="stat-title">💰 Total PnL</span>
+        <span class="stat-value">
+        <span class="stat-value">${pnl_last:.2f}</span>
+        </span>
+    </li>
+    <li>
+        <span class="stat-title">💰 Total Return(%)</span>
+        <span class="stat-value">
+        <span style="color:{'limegreen' if pnl_last_pct > 0 else 'tomato'};">{pnl_last_pct:.2f}</span>
+        </span>
+    </li>
     </ul>
     """
+
 else:
     latest_trading_day_stats = "<p>No valid trades found for the last trading day.</p>"
 
 # --- Stats Summary (Overall) ---
 stats_summary = f"""
 <ul class="metrics-list">
-    <li>💼 Total Trades: {total_trades}</li>
-    <li>✅ Wins: {total_wins}</li>
-    <li>❌ Losses: {total_losses}</li>
-    <li>📈 Max Win: {max_win:.2f}</li>
-    <li>📉 Max Loss: {max_loss:.2f}</li>
-    <li>🏆 Win Rate: {win_rate:.1f}%</li>
-    <li>📊 Avg Win / Loss: {avg_win:.2f} / {avg_loss:.2f}</li>
-    <li>💡 Expectancy: {expectancy:.2f}</li>
-    <li>💰 Total PnL: <span style="color:{'limegreen' if total_profit > 0 else 'tomato'};">{total_profit:.2f}</span></li>
-    <li>📊 Total Return (%): <span style="color:{'limegreen' if total_return_pct > 0 else 'tomato'};">{total_return_pct:.2f}%</span></li>
+    <li>
+        <span class="stat-title">💼 Total Trades</span>
+        <span class="stat-value">{total_trades}</span>
+    </li>
+    <li>
+        <span class="stat-title">✅ Wins</span>
+        <span class="stat-value">{total_wins}</span>
+    </li>
+    <li>
+        <span class="stat-title">❌ Losses</span>
+        <span class="stat-value">{total_losses}</span>
+    </li>
+    <li>
+        <span class="stat-title">📈 Max Win</span>
+        <span class="stat-value">{max_win:.2f}</span>
+    </li>
+    <li>
+        <span class="stat-title">📉 Max Loss</span>
+        <span class="stat-value">{max_loss:.2f}</span>
+    </li>
+    <li>
+        <span class="stat-title">🏆 Win Rate</span>
+        <span class="stat-value">{win_rate:.1f}%</span>
+    </li>
+    <li>
+        <span class="stat-title">📊 Avg Win</span>
+        <span class="stat-value">{avg_win:.2f}</span>
+    </li>
+    <li>
+        <span class="stat-title">📊 Avg Loss</span>
+        <span class="stat-value">{avg_loss:.2f}</span>
+    </li>
+    <li>
+        <span class="stat-title">💡 Expectancy</span>
+        <span class="stat-value">{expectancy:.2f}</span>
+    </li>
+    <li>
+        <span class="stat-title">💰 Total PnL</span>
+        <span class="stat-value">{total_profit:.2f}</span>
+    </li>
+    <li>
+        <span class="stat-title">📊 Total Return (%)</span>
+        <span class="stat-value"><span style="color:{'limegreen' if total_return_pct > 0 else 'tomato'};">{total_return_pct:.2f}%</span></span>
+    </li>
 </ul>
 """
 
@@ -298,7 +369,7 @@ fig_dd.update_layout(
 st.title("📘 Trading Journal")
 col1, col2 = st.columns(2)
 with col1:
-    st.subheader("Last Day Stats.")
+    st.subheader(f"Last Day Stats {last_date}")
     st.markdown(latest_trading_day_stats, unsafe_allow_html=True)
 with col2:
     st.subheader("Stats Summary")

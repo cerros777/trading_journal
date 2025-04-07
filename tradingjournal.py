@@ -43,8 +43,8 @@ def update_trading_journal(latest_file, master_file):
         # # Backup the existing master journal.
         # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         # backup_path = f"{os.path.splitext(master_file)[0]}_backup_{timestamp}.xlsx"
-        # shutil.copy(master_file, backup_path)
-        print(f"🗂️ old trading journal {master_journal}")
+        # shutil.copy(master_file, backup_path) 
+     #  print(f"🗂️ old trading journal {master_journal}")
 
     except FileNotFoundError:
         print("Master journal not found. Creating a new one.")
@@ -100,4 +100,4 @@ def update_trading_journal(latest_file, master_file):
     # Save the updated master journal.
     combined.to_excel(master_file, index=False)
     print(f"✅ Trading journal updated and saved as {master_file}")
-    print(master_file)
+  # print(master_file)
