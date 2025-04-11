@@ -203,9 +203,9 @@ if not last_day_trades.empty:
     pnl_last = last_day_trades["Total Position PnL"].sum()
     #pnl_last_pct = pnl_last / total_last * 100
     win_rate_last = wins_last / total_last * 100 if total_last > 0 else 0
-    avg_win_last = last_day_trades[last_day_trades["Total Position PnL"] > 0]["Total Position PnL"].mean()
-    avg_loss_last = last_day_trades[last_day_trades["Total Position PnL"] < 0]["Total Position PnL"].mean()
-    expectancy_last = (win_rate_last/100 * avg_win_last) + ((1 - win_rate_last/100) * avg_loss_last)
+    avg_win_last = last_day_trades[last_day_trades["Total Position PnL"] > 0]["Total Position PnL"].mean() or 0.0
+    avg_loss_last = last_day_trades[last_day_trades["Total Position PnL"] < 0]["Total Position PnL"].mean() or 0.0
+    expectancy_last = ((win_rate_last or 0.0)/100 * (avg_win_last or 0.0)) + ((1 - (win_rate_last or 0.0)/100) * (avg_loss_last or 0.0))
     previous_cumulative_pnl = df[df["Date"].dt.date < last_date]["Total Position PnL"].sum()+100
     if previous_cumulative_pnl != 0:
         pnl_last_pct = (pnl_last / previous_cumulative_pnl) * 100
@@ -260,7 +260,7 @@ if not last_day_trades.empty:
     <li>
         <span class="stat-title">💰 Total Return(%)</span>
         <span class="stat-value">
-        <span style="color:{'limegreen' if pnl_last_pct > 0 else 'tomato'};">{pnl_last_pct:.2f}</span>
+        <span style="color:{'limegreen' if pnl_last_pct > 0 else 'tomato'};">{pnl_last_pct:.2f}%</span>
         </span>
     </li>
     </ul>
