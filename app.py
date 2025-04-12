@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import os
+import math
 from datetime import datetime
 from tradingjournal import update_trading_journal
 
@@ -203,9 +204,9 @@ if not last_day_trades.empty:
     pnl_last = last_day_trades["Total Position PnL"].sum()
     #pnl_last_pct = pnl_last / total_last * 100
     win_rate_last = wins_last / total_last * 100 if total_last > 0 else 0
-    avg_win_last = last_day_trades[last_day_trades["Total Position PnL"] > 0]["Total Position PnL"].mean() or 0.0
-    avg_loss_last = last_day_trades[last_day_trades["Total Position PnL"] < 0]["Total Position PnL"].mean() or 0.0
-    expectancy_last = ((win_rate_last or 0.0)/100 * (avg_win_last or 0.0)) + ((1 - (win_rate_last or 0.0)/100) * (avg_loss_last or 0.0))
+    avg_win_last = 0.0 if math.isnan(last_day_trades[last_day_trades["Total Position PnL"] > 0]["Total Position PnL"].mean()) else last_day_trades[last_day_trades["Total Position PnL"] > 0]["Total Position PnL"].mean()
+    avg_loss_last = 0.0 if math.isnan(last_day_trades[last_day_trades["Total Position PnL"] < 0]["Total Position PnL"].mean()) else last_day_trades[last_day_trades["Total Position PnL"] < 0]["Total Position PnL"].mean()
+    expectancy_last = ((0.0 if math.isnan(win_rate_last) else win_rate_last) / 100 * (0.0 if math.isnan(avg_win_last) else avg_win_last)) + ((1 - (0.0 if math.isnan(win_rate_last) else win_rate_last) / 100) * (0.0 if math.isnan(avg_loss_last) else avg_loss_last))
     previous_cumulative_pnl = df[df["Date"].dt.date < last_date]["Total Position PnL"].sum()+100
     if previous_cumulative_pnl != 0:
         pnl_last_pct = (pnl_last / previous_cumulative_pnl) * 100
@@ -233,7 +234,7 @@ if not last_day_trades.empty:
     </li>
     <li>
         <span class="stat-title">📉 Max Loss</span>
-        <span class="stat-value">${last_day_trades['Total Position PnL'].min():.2f}</span>
+        <span class="stat-value">${(last_day_trades[last_day_trades['Total Position PnL'] < 0]['Total Position PnL'].min() if not last_day_trades[last_day_trades['Total Position PnL'] < 0].empty else 0.0):.2f}</span>
     </li>
     <li>
         <span class="stat-title">🏆 Win Rate</span>
