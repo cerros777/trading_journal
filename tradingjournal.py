@@ -3,6 +3,41 @@ from datetime import datetime
 import shutil
 import os
 import numpy as np
+import os
+from dotenv import load_dotenv
+from supabase import create_client, Client
+
+load_dotenv()
+
+url: str = os.environ.get("SUPABASE_URL")
+key: str = os.environ.get("SUPABASE_KEY")
+supabase: Client = create_client(url, key)
+
+def download_from_supabase(local_path="trading_journal.xlsx", bucket="trading-journal", storage_path="trading_journal.xlsx"):
+    try:
+        res = supabase.storage.from_(bucket).download(storage_path)
+        with open(local_path, "wb") as f:
+            f.write(res)
+        print("✅ Downloaded from Supabase")
+    except Exception as e:
+        print("⚠️ Could not download file from Supabase:", e)
+
+
+def upload_to_supabase(local_file_path, bucket="trading-journal", storage_path="trading_journal.xlsx"):
+    try:
+        # Optional: Remove old version first
+        try:
+            supabase.storage.from_(bucket).remove([storage_path])
+        except Exception as e:
+            print("⚠️ Could not remove old file (probably doesn't exist):", e)
+
+        # Upload new file
+        with open(local_file_path, "rb") as f:
+            supabase.storage.from_(bucket).upload(storage_path, f)
+        print("✅ Uploaded to Supabase")
+    except Exception as e:
+        print("⚠️ Could not upload file to Supabase:", e)
+
 
 
 def update_trading_journal(latest_file, master_file):
@@ -39,12 +74,8 @@ def update_trading_journal(latest_file, master_file):
     
     # Load or create the master journal.
     try:
+        download_from_supabase(local_path=master_file)
         master_journal = pd.read_excel(master_file)
-        # # Backup the existing master journal.
-        # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        # backup_path = f"{os.path.splitext(master_file)[0]}_backup_{timestamp}.xlsx"
-        # shutil.copy(master_file, backup_path) 
-     #  print(f"🗂️ old trading journal {master_journal}")
 
     except FileNotFoundError:
         print("Master journal not found. Creating a new one.")
@@ -99,5 +130,6 @@ def update_trading_journal(latest_file, master_file):
     
     # Save the updated master journal.
     combined.to_excel(master_file, index=False)
+    upload_to_supabase(master_file)
     print(f"✅ Trading journal updated and saved as {master_file}")
   # print(master_file)
