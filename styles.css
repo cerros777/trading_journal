@@ -1,0 +1,110 @@
+/* Small Nav Bar */
+.small-nav {
+    text-align: right;
+    font-size: 14px;
+    margin-top: 60px;
+}
+.small-nav a {
+    margin-left: 15px;
+    color: white;
+    text-decoration: none;
+}
+.small-nav a:hover {
+    text-decoration: underline;
+}
+/* List Cards */
+ul.metrics-list {
+    list-style: none;
+    padding: 0;
+    margin: 10;
+    line-height: 1.6;
+    font-size: 0.95rem;
+    column-count: 2;
+    column-gap: 0.5rem;
+}
+ul.metrics-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0px;
+    margin-bottom: 1rem;
+    margin-right: 0.5rem;
+}
+ul.metrics-list li .stat-title {
+    flex: 1;
+    text-align: left;
+}
+ul.metrics-list li .stat-value {
+    flex: 1;
+    text-align: right;
+    font-weight: bold;
+}
+/* Cards */
+[data-testid="stColumn"] {
+    background-color: rgb(38, 39, 48);
+    border: 1px solid #30363D;
+    border-radius: 10px;
+    padding: 10px;
+}
+/* Table Styling */
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    background-color: #1e1e1e;
+}
+.custom-table th, .custom-table td {
+    padding: 10px 15px;
+    border: 1px solid #333;
+}
+.custom-table th {
+    background-color: #222;
+    color: #f0f0f0;
+    text-align: left;
+}
+.custom-table tr:nth-child(even) {
+    background-color: #2a2a2a;
+}
+.custom-table tr:hover {
+    background-color: #333;
+}
+.custom-table td.notes {
+    width: 40%;
+    color: #aaa;
+    font-style: italic;
+}
+.custom-table td:not(.notes) {
+    color: #ddd;
+    text-align: center;
+}
+/* Fixed header container */
+.fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.fixed-header .title {
+    color: #fff;
+    font-size: 24px;
+    font-weight: bold;
+}
+.fixed-header .small-nav a {
+    margin-left: 15px;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+}
+.fixed-header .small-nav a:hover {
+    text-decoration: underline;
+}
+/* Add top margin to content so it doesn't get hidden behind the fixed header */
+.content {
+    margin-top: 70px;
+}
