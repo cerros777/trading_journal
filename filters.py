@@ -7,9 +7,9 @@ def apply_date_filter(df, period):
 
     if period == "Last Day":
         return df[df["Date"].dt.date == today.date()]
-    elif period == "Last 7 Days":
+    elif period == "Last week":
         return df[df["Date"] >= today - timedelta(days=6)]
-    elif period == "Last 30 Days":
+    elif period == "Last month":
         return df[df["Date"] >= today - timedelta(days=29)]
     else:
         return df

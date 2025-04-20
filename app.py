@@ -12,6 +12,7 @@ from visuals import plot_equity, plot_drawdown
 from components import generate_stats_html
 from latest import render_latest_trades
 from history import render_trade_history
+from filter_chips import render_filter_chips
 
 
 st.set_page_config(page_title="Trading Journal Dashboard.", layout="wide")
@@ -58,13 +59,13 @@ print(f"loaded data {df}")
 st.title("📘 Trading Journal")
 col1, col2 = st.columns(2)
 with col1:
-    filter_opt = st.selectbox("Select Date Range", ["Last Day", "Last 7 Days", "Last 30 Days", "All Time"], key="stats_filter")
-    filtered_df = apply_date_filter(df, filter_opt)
+    st.subheader(f"Stats for")
+    filtered_df, selected_filter = render_filter_chips(df, session_key="stats_filter")
     stats = calculate_filtered_stats(filtered_df, df)
-    st.subheader(f"Stats for {filter_opt}")
     st.markdown(generate_stats_html(stats), unsafe_allow_html=True)
 
 with col2:
+    st.markdown('<div id="summary">', unsafe_allow_html=True)
     st.subheader("Stats Summary")
     overall_stats = calculate_overall_stats(df)
     st.markdown(generate_stats_html(overall_stats), unsafe_allow_html=True)
@@ -74,18 +75,22 @@ col_chart1, col_chart2 = st.columns(2)
 with col_chart1:
     chart_filter = st.selectbox("Equity Date Range", ["Last 7 Days", "Last 30 Days", "All Time"], key="equity_filter")
     eq_df = apply_date_filter(df, chart_filter)
+    st.markdown('<div id="equity">', unsafe_allow_html=True)
     st.subheader("\U0001F4C8 Equity Curve")
     st.plotly_chart(plot_equity(eq_df), use_container_width=True)
 
 with col_chart2:
+    st.markdown('<div id="drawdown">', unsafe_allow_html=True)
     st.subheader("\U0001F4C9 Drawdown Curve")
     st.plotly_chart(plot_drawdown(eq_df), use_container_width=True)
 
 # --- Latest 5 Trades Section ---
+st.markdown('<div id="latest">', unsafe_allow_html=True)
 st.subheader("🧾 Latest 5 Trades")
 render_latest_trades(df)
 
 # --- Full History Table Section ---
+st.markdown('<div id="history">', unsafe_allow_html=True)
 st.subheader("📜 Full History")
 render_trade_history(df)
 

@@ -1,0 +1,21 @@
+# Ignore unnecessary frontend files and cache
+node_modules/
+.env
+.vscode/
+public/
+build/static/js/*.map
+build/static/css/*.map
+
+# Ignore frontend dev-only artifacts
+frontend/node_modules/
+frontend/.env
+frontend/.DS_Store
+frontend/.vscode/
+frontend/src/*.ts
+frontend/src/*.tsx
+frontend/src/*.d.ts
+
+# Ignore cache and log files
+*.log
+__pycache__/
+*.pyc
