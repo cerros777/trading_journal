@@ -5,18 +5,21 @@ from filters import apply_date_filter
 def render_filter_chips(df, session_key="filter_selection"):
     filter_options = ["Last Day", "Last week", "Last month", "All Time"]
 
-    # Initialize
+    # Default
     if session_key not in st.session_state:
         st.session_state[session_key] = "Last Day"
 
-    selected = pills(
+    selected_value = pills(
         label="",  # Hide label
         options=filter_options,
         index=filter_options.index(st.session_state[session_key]),
         label_visibility="collapsed",
-        backgroundColor="gray"
+        backgroundColor="#262730"
     )
 
-    st.session_state[session_key] = selected
-    return apply_date_filter(df, selected), selected
+    if st.session_state[session_key] != selected_value:
+        st.session_state[session_key] = selected_value
+        st.rerun()
+
+    return apply_date_filter(df, selected_value), selected_value
 
