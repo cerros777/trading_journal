@@ -5,7 +5,7 @@ import os
 from datetime import timedelta
 import math
 from datetime import datetime
-from tradingjournal import update_trading_journal
+from tradingjournal import update_trading_journal, download_from_supabase
 from filters import apply_date_filter
 from metrics import calculate_overall_stats, calculate_filtered_stats
 from visuals import plot_equity, plot_drawdown
@@ -45,6 +45,7 @@ if uploaded_file is not None:
 # --- Load Data ---
 @st.cache_data
 def load_data(file):
+    download_from_supabase(local_path=file)
     df = pd.read_excel(file, parse_dates=["Date"])
     # Use the same date format as saved in tradingjournal.py
     df = df.dropna(subset=["Date"])
@@ -52,6 +53,11 @@ def load_data(file):
 
 
     return df
+
+# Clear cache on first run to ensure fresh data
+if "first_load" not in st.session_state:
+    st.cache_data.clear()
+    st.session_state.first_load = True
 
 df = load_data("trading_journal.xlsx")
 print(f"loaded data {df}")
