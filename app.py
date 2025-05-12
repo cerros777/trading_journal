@@ -63,10 +63,13 @@ df = load_data("trading_journal.xlsx")
 print(f"loaded data {df}")
 
 st.title("📘 Trading Journal")
+
+
 col1, col2 = st.columns(2)
 with col1:
     st.subheader(f"Stats for")
-    filtered_df, selected_filter = render_filter_chips(df, session_key="stats_filter")
+    selected_filter = render_filter_chips(session_key="stats_filter")
+    filtered_df = apply_date_filter(df, selected_filter)
     stats = calculate_filtered_stats(filtered_df, df)
     st.markdown(generate_stats_html(stats), unsafe_allow_html=True)
 
@@ -79,10 +82,10 @@ with col2:
 # --- Charts ---
 col_chart1, col_chart2 = st.columns(2)
 with col_chart1:
-    chart_filter = st.selectbox("Equity Date Range", ["Last 7 Days", "Last 30 Days", "All Time"], key="equity_filter")
+    st.subheader("\U0001F4C8 Equity Curve")
+    chart_filter = render_filter_chips(session_key="equity_curve_filter", default="All Time")
     eq_df = apply_date_filter(df, chart_filter)
     st.markdown('<div id="equity">', unsafe_allow_html=True)
-    st.subheader("\U0001F4C8 Equity Curve")
     st.plotly_chart(plot_equity(eq_df), use_container_width=True)
 
 with col_chart2:
